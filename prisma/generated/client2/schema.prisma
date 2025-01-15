@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "./generated/client2"
@@ -15,16 +9,16 @@ datasource db {
 }
 
 model Product {
-  id          Int       @id @default(autoincrement())
-  name        String
-  description String
-  price       Float
-  createdBy   Int
-  createdAt   DateTime  @default(now())
-  updatedBy   Int
-  updatedAt   DateTime?
-
+  id                  Int                   @id @default(autoincrement())
+  name                String
+  createdBy           Int
+  createdAt           DateTime              @default(now())
+  updatedBy           Int
+  updatedAt           DateTime?
+  description         String
+  price               Float
   ProductCategory     ProductCategory[]
+  ProductPicture      ProductPicture[]
   ProductPriceHistory ProductPriceHistory[]
 }
 
@@ -34,18 +28,16 @@ model ProductPriceHistory {
   price     Float
   createdBy Int
   createdAt DateTime @default(now())
-
-  Product Product @relation(fields: [productId], references: [id])
+  Product   Product  @relation(fields: [productId], references: [id])
 }
 
 model Category {
-  id        Int       @id @default(autoincrement())
-  name      String
-  createdBy Int
-  createdAt DateTime  @default(now())
-  updatedBy Int
-  updatedAt DateTime?
-
+  id              Int               @id @default(autoincrement())
+  name            String
+  createdBy       Int
+  createdAt       DateTime          @default(now())
+  updatedBy       Int
+  updatedAt       DateTime?
   ProductCategory ProductCategory[]
 }
 
@@ -57,7 +49,17 @@ model ProductCategory {
   createdAt  DateTime  @default(now())
   updatedBy  Int
   updatedAt  DateTime?
+  Category   Category  @relation(fields: [categoryId], references: [id])
+  Product    Product   @relation(fields: [productId], references: [id])
+}
 
-  Product  Product  @relation(fields: [productId], references: [id])
-  Category Category @relation(fields: [categoryId], references: [id])
+model ProductPicture {
+  id        Int       @id @default(autoincrement())
+  productId Int
+  createdBy Int
+  createdAt DateTime  @default(now())
+  updatedBy Int
+  updatedAt DateTime?
+  fileName  String
+  Product   Product   @relation(fields: [productId], references: [id])
 }

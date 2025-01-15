@@ -1,5 +1,6 @@
 import * as Yup from "yup";
 import { Response } from "express";
+import multer from "multer";
 
 const errorHandler = (error: any, res: Response) => {
     console.log(error);
@@ -9,6 +10,12 @@ const errorHandler = (error: any, res: Response) => {
             success: false,
             message: "Validation error",
             error: error.errors
+        });
+    } else if (error instanceof multer.MulterError) {
+        res.status(400).json({
+            success: false,
+            message: error.message,
+            error: "Bad Request"
         });
     } else {
         res.status(500).json({

@@ -4,30 +4,51 @@ import errorHandler from "../utils/errorHandler";
 import { db2 } from "../prisma";
 import { TProductPayload } from "../types";
 import { getWIB } from "../utils/helpers";
+import { imageUploader } from "../utils/multerConfiguration";
+import { getAuthUser } from "../service/auth";
 
 const productController = {
     create: async (req: Request, res: Response) => {
         try {
+            const user = await getAuthUser(req.headers.authorization as string);
+
             await productPayloadSchema.validate(req.body);
             const { name, description, price }: TProductPayload = req.body;
-            const userId = req.body.userId;
-            
+         
             const product = await db2.product.create({
                 data: { 
                     name, 
                     description, 
-                    price, 
-                    createdBy: userId, 
+                    price: Number(price), 
+                    createdBy: Number(user.id), 
                     createdAt: getWIB(), 
-                    updatedBy: userId, 
+                    updatedBy: Number(user.id), 
                     updatedAt: getWIB(),
                 },
             });
 
+            const filesData = req.files as Express.Multer.File[];
+            const savedFiles = await Promise.all(
+                filesData.map(async (file) => {
+                    return db2.productPicture.create({
+                        data: {
+                            productId: product.id,
+                            fileName: file.filename,
+                            createdBy: Number(user.id),
+                            createdAt: getWIB(),
+                            updatedBy: Number(user.id),
+                            updatedAt: getWIB(),
+                        },
+                    })
+                })
+            );
+
+            const result = { ...product, files: savedFiles };
+
             res.status(200).json({
                 success: true,
                 message: "Product created successfully",
-                data: product
+                data: result
             });
         } catch (error) {
             errorHandler(error, res);          
