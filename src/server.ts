@@ -16,6 +16,15 @@ app.use('/uploads', authenticate, express.static(path.join(__dirname, '/uploads'
 app.use("/api", router);
 
 const port = process.env.PORT;
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-});
+const portTest = process.env.PORT_TEST;
+if (process.env.NODE_ENV === "test") {
+    app.listen(portTest, () => {
+        console.log(`Testing is running on port ${portTest}`);
+    });
+} else {
+    app.listen(port, () => {
+        console.log(`Server is running on port ${port}`);
+    });
+}
+
+export default app;
