@@ -16,6 +16,6 @@ router.get("/products", authenticate, productController.getAll);
 router.get("/products/:id", authenticate, productController.getById);
 router.put("/products/:id", authenticate, productController.update);
 router.delete("/products/:id", authenticate, productController.delete);
-
+router.get("/export-pdf-product", productController.exportPdf);
 
 export default router;

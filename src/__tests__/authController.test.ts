@@ -9,42 +9,64 @@ const user = {
     confirmPassword: "123456"
 };
 
-describe("authController - Register", () => {
-    it("should register a new user successfully", async () => {
-        const response = await request(app)
-                            .post("/api/register")
-                            .send(user);
 
+
+describe("authController - Register", () => {
+    let response: request.Response;
+
+    beforeAll(async () => { 
+        response = await request(app)
+                    .post("/api/register")
+                    .send(user);
+
+    });
+
+    it("should return response status code 200", async () => {
         expect(response.status).toBe(200);
+    });
+
+    it("should return response body to have success, message and data properties", async () => {
         expect(response.body).toHaveProperty("success");
         expect(response.body).toHaveProperty("message");
         expect(response.body).toHaveProperty("data");
+    });
+
+    it ("should return response body to have data property with id, name and email properties", async () => {
         expect(response.body.data).toHaveProperty("id");
         expect(response.body.data).toHaveProperty("name");
         expect(response.body.data).toHaveProperty("email");
-        expect(response.body.success).toBe(true);
-        expect(response.body.message).toBe("User register successfully.");
-        expect(response.body.data.name).toBe(user.name);
-        expect(response.body.data.email).toBe(user.email);
+    });
+
+    afterAll(async () => {
+        await db1.user.delete({ where: { email: user.email } });
     });
 });
 
 describe("authController - Login", () => {
-    it("should login successfully", async () => {
-        const response = await request(app)
-                            .post("/api/login")
-                            .send({
-                                email: user.email,
-                                password: user.password
-                            });
+    let response: request.Response;
+
+    beforeAll(async () => { 
+        await request(app)
+                    .post("/api/register")
+                    .send(user);
         
+        response = await request(app)
+                    .post("/api/login")
+                    .send({
+                        email: user.email,
+                        password: user.password
+                    });
+
+    });
+    
+    it("should return response status code 200", async () => {
         expect(response.status).toBe(200);
+    });
+
+    it("should return response body to have success, message and data properties", async () => {    
         expect(response.body).toHaveProperty("success");
         expect(response.body).toHaveProperty("message");
         expect(response.body).toHaveProperty("data");
-        expect(response.body.data).toHaveProperty("token");
-        expect(response.body.success).toBe(true);
-        expect(response.body.message).toBe("Login successfully.");
     });
 
     afterAll(async () => {

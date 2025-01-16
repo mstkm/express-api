@@ -5,7 +5,6 @@ import { db2 } from "../prisma";
 import { TProductPayload } from "../types";
 import { deleteFile, getWIB } from "../utils/helpers";
 import { getAuthUser } from "../service/auth";
-import fs from "fs";
 
 const productController = {
     create: async (req: Request, res: Response) => {
@@ -160,7 +159,17 @@ const productController = {
         } catch (error) {
             errorHandler(error, res);
         }
-    }
+    },
+    exportPdf: async (_req: Request, res: Response) => {
+        try {
+            res.status(200).json({
+                success: true,
+                message: "Export PDF Successfully."
+            });
+        } catch (error) {
+            errorHandler(error, res);
+        }
+    },
 }
 
 export default productController;
