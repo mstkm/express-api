@@ -3,9 +3,9 @@ import { productPayloadSchema } from "../utils/validationSchema";
 import errorHandler from "../utils/errorHandler";
 import { db2 } from "../prisma";
 import { TProductPayload } from "../types";
-import { getWIB } from "../utils/helpers";
-import { imageUploader } from "../utils/multerConfiguration";
+import { deleteFile, getWIB } from "../utils/helpers";
 import { getAuthUser } from "../service/auth";
+import fs from "fs";
 
 const productController = {
     create: async (req: Request, res: Response) => {
@@ -140,8 +140,17 @@ const productController = {
     delete: async (req: Request, res: Response) => {
         try {
             const id = parseInt(req.params.id);
+            const files = await db2.productPicture.findMany({
+                where: { productId: id },
+            });
+
             await db2.product.delete({
                 where: { id }
+            });
+
+            files.forEach(async (file) => {
+                const filePath = `src/uploads/${file.fileName}`;
+                await deleteFile(filePath);
             });
 
             res.status(200).json({
