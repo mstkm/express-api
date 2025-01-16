@@ -5,6 +5,9 @@ import { db2 } from "../prisma";
 import { TProductPayload } from "../types";
 import { deleteFile, getWIB } from "../utils/helpers";
 import { getAuthUser } from "../service/auth";
+import puppeteer from "puppeteer";
+import path from "path";
+import ejs from "ejs";
 
 const productController = {
     create: async (req: Request, res: Response) => {
@@ -162,10 +165,31 @@ const productController = {
     },
     exportPdf: async (_req: Request, res: Response) => {
         try {
-            res.status(200).json({
-                success: true,
-                message: "Export PDF Successfully."
-            });
+            const data = {
+                title: 'Product List',
+                products: [
+                    { name: 'Product 1', price: '$10' },
+                    { name: 'Product 2', price: '$20' },
+                    { name: 'Product 3', price: '$30' }
+                ]
+            };
+
+            const htmlFilePath = "src/views/template.ejs";
+            const htmlContent = await ejs.renderFile(htmlFilePath, data);
+
+            const browser = await puppeteer.launch();
+            const page = await browser.newPage();
+
+            await page.setContent(htmlContent);
+
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', 'inline');
+
+            const pdfBuffer = await page.pdf();
+
+            res.end(pdfBuffer);
+
+            await browser.close();
         } catch (error) {
             errorHandler(error, res);
         }
