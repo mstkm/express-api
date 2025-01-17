@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import errorHandler from "../utils/errorHandler";
+import { errorHandler } from "../utils/errorHandler";
 
 const downloadController = {
     downloadTemplate: (_req: Request, res: Response) => {

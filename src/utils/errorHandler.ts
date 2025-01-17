@@ -2,7 +2,7 @@ import * as Yup from "yup";
 import { Response } from "express";
 import multer from "multer";
 
-const errorHandler = (error: any, res: Response) => {
+export const errorHandler = (error: any, res: Response) => {
     console.log(error);
     const e = error as Error;
     if (error instanceof Yup.ValidationError) {
@@ -25,5 +25,3 @@ const errorHandler = (error: any, res: Response) => {
         });
     }
 }
-
-export default errorHandler;

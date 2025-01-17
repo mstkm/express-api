@@ -4,7 +4,7 @@ import { loginSchema, registerSchema } from "../utils/validationSchema";
 import bcrypt from "bcrypt";
 import { db1 } from "../prisma";
 import jwt from "jsonwebtoken";
-import errorHandler from "../utils/errorHandler";
+import { errorHandler } from "../utils/errorHandler";
 import { getWIB } from "../utils/helpers";
 
 const authController = {

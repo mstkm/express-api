@@ -1,13 +1,15 @@
 import { Request, Response } from "express";
 import { productPayloadSchema } from "../utils/validationSchema";
-import errorHandler from "../utils/errorHandler";
+import { errorHandler } from "../utils/errorHandler";
 import { db2 } from "../prisma";
 import { TProductPayload } from "../types";
 import { deleteFile, getWIB } from "../utils/helpers";
 import { getAuthUser } from "../service/auth";
 import puppeteer from "puppeteer";
-import path from "path";
 import ejs from "ejs";
+import ExcelJS from "exceljs";
+import path from "path";
+import fs from "fs";
 
 const productController = {
     create: async (req: Request, res: Response) => {
@@ -194,6 +196,68 @@ const productController = {
             errorHandler(error, res);
         }
     },
+    importExcel: async (req: Request, res: Response) => {
+        try {
+            if (!req.file) {
+                res.status(400).json({ 
+                    success: false,
+                    message: "No file uploaded",
+                });
+                return;
+            }
+
+            const user = await getAuthUser(req.headers.authorization as string);
+            const file = req.file as Express.Multer.File;
+            const filePath = path.join(__dirname, "../uploads/import-product", file.filename);
+            const workbook = new ExcelJS.Workbook();
+            await workbook.xlsx.readFile(filePath);
+
+            const worksheet = workbook.getWorksheet(1);
+            const data: any[] = [];
+            worksheet?.eachRow(async (row, rowNumber) => {
+                if (rowNumber > 1) {
+                    const rowData = {
+                        name: row.getCell(1).value,
+                        description: row.getCell(2).value,
+                        price: row.getCell(3).value,
+                    };
+                    data.push(rowData);
+                }
+            });
+
+            if (data.length === 0) {
+                res.status(400).json({ 
+                    success: false,
+                    message: "No data found in excel file",
+                });
+                return;
+            }
+
+            data.forEach(async (item) => {
+                await db2.product.create({
+                    data: {
+                        name: item.name,
+                        description: item.description,
+                        price: item.price,
+                        createdBy: user.id!,
+                        createdAt: getWIB(),
+                        updatedBy: user.id!,
+                        updatedAt: getWIB(),
+                    }
+                });
+            });
+
+            fs.unlinkSync(filePath);
+
+            res.status(200).json({
+                success: true,
+                message: "Excel imported successfully",
+                data: data
+            });
+        } catch (error) {
+            errorHandler(error, res);
+        }
+    }
 }
 
 export default productController;
