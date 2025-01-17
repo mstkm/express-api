@@ -33,8 +33,10 @@ app.use(errorHandlerMiddleware);
 
 const port = process.env.PORT;
 const portTest = process.env.PORT_TEST;
+
+let server: any;
 if (process.env.NODE_ENV === "test") {
-    app.listen(portTest, () => {
+    server = app.listen(portTest, () => {
         console.log(`Testing is running on port ${portTest}`);
     });
 } else {
@@ -43,4 +45,4 @@ if (process.env.NODE_ENV === "test") {
     });
 }
 
-export default app;
+export { server };

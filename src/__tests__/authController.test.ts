@@ -1,5 +1,5 @@
 import request from "supertest";
-import app from "../server";
+import { server } from "../server";
 import { db1 } from "../prisma";
 
 const user = {
@@ -15,7 +15,7 @@ describe("authController - Register", () => {
     let response: request.Response;
 
     beforeAll(async () => { 
-        response = await request(app)
+        response = await request(server)
                     .post("/api/register")
                     .send(user);
 
@@ -46,11 +46,11 @@ describe("authController - Login", () => {
     let response: request.Response;
 
     beforeAll(async () => { 
-        await request(app)
+        await request(server)
                     .post("/api/register")
                     .send(user);
         
-        response = await request(app)
+        response = await request(server)
                     .post("/api/login")
                     .send({
                         email: user.email,
@@ -71,5 +71,6 @@ describe("authController - Login", () => {
 
     afterAll(async () => {
         await db1.user.delete({ where: { email: user.email } });
+        server.close();
     });
 });
